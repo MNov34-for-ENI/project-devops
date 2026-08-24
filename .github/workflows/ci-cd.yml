@@ -1,4 +1,4 @@
-name: CI/CD Frontend
+name: CI/CD
 
 on:
   push:
@@ -11,7 +11,50 @@ defaults:
     working-directory: frontend
 
 jobs:
-  test:
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: todolist_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -uroot -prootpass"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: todolist_db
+      DB_DIALECT: mysql
+      PORT: 3000
+    steps:
+      # Récupère le code du dépôt
+      - uses: actions/checkout@v4
+
+      # Configure Node.js pour l’environnement de test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      # Installe les dépendances pour le job de test
+      - run: npm ci
+
+      # Exécute les tests unitaires et d'intégration (Jest + Supertest)
+      - name: Exécuter les tests backend
+        run: npm test
+
+  frontend-test:
     runs-on: ubuntu-latest
     steps:
       # Récupère le code du dépôt
@@ -31,8 +74,8 @@ jobs:
       - name: Exécuter les tests unitaires
         run: npx ng test --watch=false --browsers=ChromeHeadless
 
-  build:
-    needs: test
+  frontend-build:
+    needs: [frontend-test, backend-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
