@@ -134,6 +134,7 @@ jobs:
         with:
           context: backend
           push: true
+          ssh: default
           tags: |
             ghcr.io/revanito/project-devops-backend:latest
             ghcr.io/revanito/project-devops-backend:${{ github.sha }}
@@ -157,6 +158,7 @@ jobs:
         with:
           context: frontend
           push: true
+          ssh: default
           tags: |
             ghcr.io/revanito/project-devops-frontend:latest
             ghcr.io/revanito/project-devops-frontend:${{ github.sha }}
