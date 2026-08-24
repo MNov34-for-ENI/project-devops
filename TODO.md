@@ -12,17 +12,17 @@ no `monitoring/`. Root `README.md` is still a stub.
 ## 1. Local run & validation
 Foundation step, not graded directly, but everything after depends on trusting this works.
 
-- [ ] Stand up MySQL locally (Docker Hub image), create `todolist_db`, run `backend/scriptSQL.sql`
-- [ ] Fill `backend/.env` (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_DIALECT=mysql`, `PORT`)
+- [X] Stand up MySQL locally (Docker Hub image), create `todolist_db`, run `backend/scriptSQL.sql`
+- [X] Fill `backend/.env` (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_DIALECT=mysql`, `PORT`)
       — note `config/config.js` reads `DB_DIALECT` from env, not hardcoded
-- [ ] `npm install && npm run start` in backend, confirm `/api/docs` and `/api/tasks` work
-- [ ] `npm install && npm run start` in frontend, confirm it talks to the API
-- [ ] Run `npm test` in both — confirm the existing suites actually pass before wiring CI to them
+- [X] `npm install && npm run start` in backend, confirm `/api/docs` and `/api/tasks` work
+- [X] `npm install && npm run start` in frontend, confirm it talks to the API
+- [X] Run `npm test` in both — confirm the existing suites actually pass before wiring CI to them
 
 ## 2. Dockerize (2 pts)
-- [ ] `backend/Dockerfile` (node base image, install, expose `PORT`, run `server.js`)
-- [ ] `frontend/Dockerfile` — build Angular (`ng build`) then serve static output via nginx
-- [ ] Build both locally, run with a local MySQL container, confirm the containerized app works
+- [X] `backend/Dockerfile` (node base image, install, expose `PORT`, run `server.js`)
+- [X] `frontend/Dockerfile` — build Angular (`ng build`) then serve static output via nginx
+- [X] Build both locally, run with a local MySQL container, confirm the containerized app works
       end-to-end before touching Kubernetes
 
 ## 3. Push images to a registry
@@ -37,8 +37,8 @@ Foundation step, not graded directly, but everything after depends on trusting t
 - [ ] `iac/README.md` documenting `terraform init` / `plan` / `apply`
 
 ## 5. CI/CD pipeline (`.github/workflows/ci-cd.yml`) (4 pts — heaviest single axis)
-- [ ] Run backend + frontend unit tests
-- [ ] Build + push Docker images (only reachable if tests pass — gate this explicitly, not just
+- [X] Run backend + frontend unit tests
+- [X] Build + push Docker images (only reachable if tests pass — gate this explicitly, not just
       via job order)
 - [ ] Deploy to AKS only if tests are 100% green
 - [ ] Deploy step should update the k8s manifests' image tag so a re-run produces a rolling
