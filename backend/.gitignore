@@ -4,4 +4,4 @@
 node_modules/
 
 # Optional npm cache directory
-.npm
+.npmbackend/.env
