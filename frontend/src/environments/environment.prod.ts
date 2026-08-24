@@ -1,8 +1,8 @@
 // Ce fichier est régénéré par le pipeline CI/CD (voir .github/workflows/ci-cd.yml)
-// juste avant le build de production : l'URL réelle du backend est interrogée
-// dynamiquement sur Azure via `az webapp show` puis injectée ici.
-// La valeur ci-dessous n'est qu'un garde-fou si le build est lancé sans passer par la CI.
+// juste avant le build de production, au cas où l'URL de l'API devrait changer.
+// La valeur ci-dessous est celle utilisée par défaut (Ingress AKS et proxy nginx
+// local via docker-compose routent tous les deux /api vers le service backend).
 export const environment = {
   production: true,
-  apiUrl: 'REPLACE_AT_BUILD_TIME'
+  apiUrl: '/api'
 };
