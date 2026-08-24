@@ -36,9 +36,10 @@ Groupe Maël Corentin B. et Nicolas
 
 - Deux tests exécutés : les tests unitaires du service (`task.service.test.js`) et les tests d'intégration des routes REST (`task.routes.test.js`, via Supertest). 
 
-- Rename `test` vers `frontend-test`, 
-- `build` vers `frontend-build`
--  job `frontend-build` dépend désormais à la fois de `frontend-test` **et** `backend-test`, 
+- Renamed : 
+`test` vers `frontend-test`, 
+`build` vers `frontend-build`
+`frontend-build` dépend désormais à la fois de `frontend-test` **et** `backend-test`, 
 Comme ça le build ne se déclenche que si l'intégralité des tests (frontend + backend) est au vert et pas à chaque push/test/buid
 ## 4) configuration AKS
 ## 5) infrastructure Terraform
