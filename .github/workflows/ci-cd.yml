@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+
 defaults:
   run:
     working-directory: frontend
@@ -109,4 +113,48 @@ jobs:
       - name: Construire le bundle de production
         run: npx ng build --configuration production
 
-# TODO: construire l'image Docker du frontend, la pousser vers GHCR et la déployer sur AKS
+  # NOTE : owner GHCR en dur (revanito) — si vous forkez sous votre propre compte,
+  # remplacez "revanito" par votre login GitHub en minuscules dans les deux jobs ci-dessous.
+  backend-image:
+    needs: backend-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: |
+            ghcr.io/revanito/project-devops-backend:latest
+            ghcr.io/revanito/project-devops-backend:${{ github.sha }}
+
+  frontend-image:
+    needs: frontend-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ghcr.io/revanito/project-devops-frontend:latest
+            ghcr.io/revanito/project-devops-frontend:${{ github.sha }}
+
+# TODO: déployer les images sur AKS (kubectl apply, mise à jour du tag d'image)
