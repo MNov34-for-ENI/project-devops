@@ -1,0 +1,5 @@
+# Modèle — copiez ce fichier en terraform.tfvars, puis renseignez VOS valeurs.
+# terraform.tfvars est ignoré par git (personnel à chaque membre de l'équipe).
+
+resource_group_name = "rg-xxx_cours-projet" # le nom EXACT de votre resource group
+myuid                = "xxx" # votre login école, ex: CBedel2025 (tag "user" obligatoire)
