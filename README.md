@@ -65,7 +65,10 @@ Comme ça le build ne se déclenche que si l'intégralité des tests (frontend +
 ## 6) monitoring
 
 - Création d'un pod Graphana et d'un pod Prometheus via commandes helm et kubectl.
-- Récupération du mdp Graphana avec la commande `kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`
+- Récupération du mdp Graphana avec la commande
+  ```
+  kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+  ```
 - Les communications sont en HTTPS ce qui nécessite l'utilisation de certificats (auto-signé ou non).
   
 ## 7) difficultés rencontrées
