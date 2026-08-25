@@ -6,8 +6,8 @@ Groupe Maël Corentin B. et Nicolas
 
 - `frontend/nginx.conf` : configuration nginx minimale avec fallback SPA (`try_files ... /index.html`) pour que le routing Angular fonctionne.
 
-- L'URL de l'API backend (`apiUrl`) est injectée au moment du build CI dans `environment.prod.ts` avec la valeur `/api`, en s'appuyant sur l'Ingress AKS pour router `/api/*` vers le service backend (reverse proxy). 
-> pas a reconstruire l'image pour changer d'environnement côté Ingress
+- L'URL de l'API backend (`apiUrl`) est injectée au moment du build CI dans `environment.prod.ts` avec la valeur `/api`, en s'appuyant sur l'Ingress AKS pour router `/api/*` vers le service backend (reverse proxy).
+- pas a reconstruire l'image pour changer d'environnement côté Ingress
 
 ### 1.5) Backend (Node/Express)
 
