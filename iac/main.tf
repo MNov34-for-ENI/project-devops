@@ -11,9 +11,12 @@ resource "azurerm_kubernetes_cluster" "this" {
   sku_tier            = "Free" # control plane managé, non facturé (sans SLA)
 
   default_node_pool {
-    name       = "system"
+    name       = "default"
     node_count = var.node_count
     vm_size    = var.vm_size
+    # Pour la science, on essaie avec la valeur "tempdefault" pour le passer en Standard_B2ms au lieu de B2s
+    # Role necessaire (que nous n'avons pas) : Delete: unexpected status 403 (403 Forbidden) with error: AuthorizationFailed
+    temporary_name_for_rotation = "tempdefault"
     # Reprend la valeur par défaut d'AKS : sans ce bloc, azurerm 4.x voudrait
     # le SUPPRIMER à un plan ultérieur -> diff parasite sur le cluster.
     upgrade_settings {

@@ -20,5 +20,5 @@ variable "node_count" {
 
 variable "vm_size" {
   type    = string
-  default = "Standard_B2s" # taille économique (burstable), suffisante pour ce projet
+  default = "Standard_B2ms" # 2 vCPU / 8 Go RAM — B2s (4 Go) jugé trop juste par le formateur
 }
