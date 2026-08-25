@@ -26,32 +26,21 @@ Groupe Maël Corentin B. et Nicolas
 
 - Un pipeline GitHub Actions existait déjà mais était mal placé (`frontend/.github/workflows/`, non détecté par GitHub vu que j'ai merge les repo "frontend", "backend" et "consignes") et ciblait la branche `master` au lieu de `main`. (Je l'ai déplacé à la racine du dépôt (`.github/workflows/ci-cd.yml`) + corrigé (branche `main`, `working-directory: frontend`).)
 
-- Ce pipeline exécute les tests unitaires Angular (`ng test --browsers ChromeHeadless`) puis construit le bundle de production. 
+- La pipeline GitHub Actions (`.github/workflows/ci-cd.yml`) exécute les tests unitaires Angular (`ng test --browsers ChromeHeadless`) puis construit le bundle de production. 
 
-- Ajout d'un job `backend-test` au pipeline GitHub Actions (`.github/workflows/ci-cd.yml`), car absent (les consignes demandent l'exécution des tests des deux projets frontend + backend)
+- Ajout d'un job `backend-test` au pipeline qui démarre un service MySQL 8 éphémère (`services: mysql`) avec un health-check (`mysqladmin ping`) pour garantir que la base est prête avant le lancement des tests. Les variables d'environnement (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_DIALECT`, `PORT`) sont injectées. Deux tests sont exécutés : les tests unitaires du service (`task.service.test.js`) et les tests d'intégration des routes REST (`task.routes.test.js`, via Supertest). 
 
-- Ce job démarre un service MySQL 8 éphémère (`services: mysql`) avec un health-check (`mysqladmin ping`) pour garantir que la base est prête avant le lancement des tests
+- L'architecture du workflow repose sur des dépendances strictes : `frontend-build` dépend de `frontend-test` **et** `backend-test`. Le build et le push des images Docker (vers GitHub Container Registry `ghcr.io`) ne se déclenchent que si l'intégralité des tests est au vert.
 
-- Les variables d'environnement (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_DIALECT`, `PORT`) sont injectées pour correspondre à la configuration attendue par `src/config/db.config.js` (et le .env est partagé sur le repo)
+- Ajout d'un job `deploy` automatisé vers AKS. Ce job s'authentifie via Azure CLI, récupère le contexte AKS, remplace dynamiquement le tag `latest` par le Git SHA dans les manifests Kubernetes (via `sed`), et applique la configuration (`kubectl apply`). Les credentials et noms de ressources (RG, Cluster) sont gérés via les secrets GitHub (`AZURE_CREDENTIALS`, `AKS_RG`, `AKS_CLUSTER`).
 
-- Deux tests exécutés : les tests unitaires du service (`task.service.test.js`) et les tests d'intégration des routes REST (`task.routes.test.js`, via Supertest). 
-
-- Renamed : 
-`test` vers `frontend-test`, 
-`build` vers `frontend-build`
-`frontend-build` dépend désormais à la fois de `frontend-test` **et** `backend-test`, 
-Comme ça le build ne se déclenche que si l'intégralité des tests (frontend + backend) est au vert et pas à chaque push/test/buid
 ## 4) configuration AKS
 
-- Manifests `k8s/` adaptés à partir d'un ancien projet de formation AKS (`k8s/webapp/` du cours Kubernetes), réutilisation par type de ressource :
-  - `deployment.yaml` > template pour `frontend-deployment.yaml` et `backend-deployment.yaml` (`resources.requests/limits`, `readinessProbe`/`livenessProbe`, `envFrom.secretRef`)
-  - `service.yaml` > template pour `frontend-service.yaml`, `backend-service.yaml`, `mysql-service.yaml` (`ClusterIP`)
-  - `ingress.yaml` > template pour l'Ingress, mais avec deux règles de path au lieu d'une seule : `/api` > service backend, `/` > service frontend (c'est ce que suppose déjà le choix `apiUrl: '/api'` fait côté CI/CD)
-  - `secret.yaml` > template pour les credentials MySQL du backend (`DB_PASSWORD`) via `stringData` + `envFrom.secretRef`
-  - `configmap.yaml` > template pour les variables d'env non-secrètes du backend (`DB_HOST`, `DB_NAME`, `DB_DIALECT`, `PORT`) via `envFrom.configMapRef`
-  - `deployment-nodeselector.yaml` (nodeSelector/tolerations pour cibler un node pool spécifique) → pas réutilisé, un seul node pool `system` dans ce projet
-  - `hpa.yaml` > pas réutilisé pour l'instant (bonus optionnel, pas demandé par les consignes)
-- `mysql-deployment.yaml` + PVC pour la persistance : rien à réutiliser du projet de formation (leur app était du nginx statique sans base de données), à écrire de zéro.
+- Manifests organisés dans `k8s/` et appliqués de manière séquentielle grâce à un préfixe numérique pour garantir l'ordre de création (Namespace > Secret/PVC > Déploiements) :
+  - `00-namespace.yaml` : création du namespace `todolist`.
+  - `01-database.yaml` : Secret Kubernetes pour les credentials, PVC pour la persistance, Déploiement et Service MySQL.
+  - `02-backend.yaml` / `03-frontend.yaml` : Déploiements utilisant les images poussées sur GHCR (`imagePullPolicy: IfNotPresent`) et Services (Node.js port 3000, Nginx port 80).
+  - `04-ingress.yaml` : Ingress NGINX routant `/api` vers le backend et `/` vers le frontend.
 
 ## 5) infrastructure Terraform
 
@@ -70,7 +59,7 @@ Comme ça le build ne se déclenche que si l'intégralité des tests (frontend +
   kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
   ```
 - Les communications sont en HTTPS ce qui nécessite l'utilisation de certificats (auto-signé ou non).
-  
+
 ## 7) difficultés rencontrées
 
 - Repérer et lever le conflit entre deux stratégies possibles d'injection de l'URL API (substitution runtime vs. génération au build CI) avant qu'il ne cause une régression silencieuse.
