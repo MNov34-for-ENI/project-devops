@@ -54,7 +54,20 @@ Comme ça le build ne se déclenche que si l'intégralité des tests (frontend +
 - `mysql-deployment.yaml` + PVC pour la persistance : rien à réutiliser du projet de formation (leur app était du nginx statique sans base de données), à écrire de zéro.
 
 ## 5) infrastructure Terraform
+
+- Prérequis: Terraform version 1.5.0 ou supérieur, une interface AZURE CLI et une "Subscription ID" valide.
+- Etape 1 : se connecter à l'interface AZURE CLI.
+- Etape 2 : cloner le repo dans le CLI et se mettre dans le dossier "iac".
+- Etape 3 : modifier le template en remplissant les champs "ressource_group_name" et "myuid" et en le renommant "terraform.tfvars"
+- Etape 4 : lancer le déploiement terraform (init, plan, apply).
+- Etape 5 : récupérer les credentials pour Graphana avec `az aks get-credentials`.
+  
 ## 6) monitoring
+
+- Création d'un pod Graphana et d'un pod Prometheus via commandes helm et kubectl.
+- Récupération du mdp Graphana avec la commande `kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo`
+- Les communications sont en HTTPS ce qui nécessite l'utilisation de certificats (auto-signé ou non).
+  
 ## 7) difficultés rencontrées
 
 - Repérer et lever le conflit entre deux stratégies possibles d'injection de l'URL API (substitution runtime vs. génération au build CI) avant qu'il ne cause une régression silencieuse.
@@ -62,3 +75,7 @@ Comme ça le build ne se déclenche que si l'intégralité des tests (frontend +
 - Docker ne démarrait pas nativement dans la LXC Proxmox (erreur `sysctl net.ipv4.ip_unprivileged_port_start: permission denied`) : nécessité d'activer `nesting`/`keyctl` et d'ajouter `lxc.apparmor.profile: unconfined` côté hôte Proxmox.
 
 - Une synchronisation de fichiers via `tar` vers la LXC a temporairement recréé un working tree Git divergent, sur un clone séparé du dépôt présent sur la LXC — résolu par un `git checkout --` ciblé plutôt qu'un reset destructif.
+
+- Gérer les droits d'accès et d'écriture sur le projet par les github actions qui ont été mis en place.
+
+- Erreur de taille de noeuds lors du déploiement de l'iac avec Terraform => modification de la valeur de `default_node_pool` dans le fichier `iac/main.tf` et mettre `temporary_name_for_rotation = "tempdefault"` puis faire un terraform destroy \ plan \ apply pour purger, réparer et recréer l'infra.
