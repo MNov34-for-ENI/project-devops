@@ -164,4 +164,28 @@ jobs:
             ghcr.io/revanito/project-devops-frontend:latest
             ghcr.io/revanito/project-devops-frontend:${{ github.sha }}
 
-# TODO: déployer les images sur AKS (kubectl apply, mise à jour du tag d'image)
+  deploy:
+    needs: [backend-image, frontend-image]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group ${{ secrets.AKS_RG }} --name ${{ secrets.AKS_CLUSTER }}
+
+      - name: Inject Commit SHA into Manifests
+        run: |
+          sed -i "s|ghcr.io/revanito/project-devops-backend:latest|ghcr.io/revanito/project-devops-backend:${{ github.sha }}|g" k8s/02-backend.yaml
+          sed -i "s|ghcr.io/revanito/project-devops-frontend:latest|ghcr.io/revanito/project-devops-frontend:${{ github.sha }}|g" k8s/03-frontend.yaml
+
+      - name: Deploy to AKS
+        run: kubectl apply -f k8s/
