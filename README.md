@@ -42,6 +42,17 @@ Groupe Maël Corentin B. et Nicolas
 `frontend-build` dépend désormais à la fois de `frontend-test` **et** `backend-test`, 
 Comme ça le build ne se déclenche que si l'intégralité des tests (frontend + backend) est au vert et pas à chaque push/test/buid
 ## 4) configuration AKS
+
+- Manifests `k8s/` adaptés à partir d'un ancien projet de formation AKS (`k8s/webapp/` du cours Kubernetes), réutilisation par type de ressource :
+  - `deployment.yaml` > template pour `frontend-deployment.yaml` et `backend-deployment.yaml` (`resources.requests/limits`, `readinessProbe`/`livenessProbe`, `envFrom.secretRef`)
+  - `service.yaml` > template pour `frontend-service.yaml`, `backend-service.yaml`, `mysql-service.yaml` (`ClusterIP`)
+  - `ingress.yaml` > template pour l'Ingress, mais avec deux règles de path au lieu d'une seule : `/api` > service backend, `/` > service frontend (c'est ce que suppose déjà le choix `apiUrl: '/api'` fait côté CI/CD)
+  - `secret.yaml` > template pour les credentials MySQL du backend (`DB_PASSWORD`) via `stringData` + `envFrom.secretRef`
+  - `configmap.yaml` > template pour les variables d'env non-secrètes du backend (`DB_HOST`, `DB_NAME`, `DB_DIALECT`, `PORT`) via `envFrom.configMapRef`
+  - `deployment-nodeselector.yaml` (nodeSelector/tolerations pour cibler un node pool spécifique) → pas réutilisé, un seul node pool `system` dans ce projet
+  - `hpa.yaml` > pas réutilisé pour l'instant (bonus optionnel, pas demandé par les consignes)
+- `mysql-deployment.yaml` + PVC pour la persistance : rien à réutiliser du projet de formation (leur app était du nginx statique sans base de données), à écrire de zéro.
+
 ## 5) infrastructure Terraform
 ## 6) monitoring
 ## 7) difficultés rencontrées

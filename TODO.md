@@ -26,15 +26,15 @@ Foundation step, not graded directly, but everything after depends on trusting t
       end-to-end before touching Kubernetes
 
 ## 3. Push images to a registry
-- [ ] Create DockerHub (or GHCR) repos, tag and push both images manually once to confirm
+- [X] Create DockerHub (or GHCR) repos, tag and push both images manually once to confirm
       access/credentials work — CI will automate this in step 5
 
 ## 4. Terraform (`iac/`) (2 pts)
-- [ ] `main.tf`, `variables.tf`, `outputs.tf` provisioning an AKS cluster + supporting resources
+- [X] `main.tf`, `variables.tf`, `outputs.tf` provisioning an AKS cluster + supporting resources
       (resource group, ACR if using GHCR alternative, etc.)
-- [ ] **Every resource must be tagged `user = <myuid>`** — explicit grading requirement, easy to
+- [X] **Every resource must be tagged `user = <myuid>`** — explicit grading requirement, easy to
       miss on a couple of resources
-- [ ] `iac/README.md` documenting `terraform init` / `plan` / `apply`
+- [X] `iac/README.md` documenting `terraform init` / `plan` / `apply`
 
 ## 5. CI/CD pipeline (`.github/workflows/ci-cd.yml`) (4 pts — heaviest single axis)
 - [X] Run backend + frontend unit tests
