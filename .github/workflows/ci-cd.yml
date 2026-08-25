@@ -55,8 +55,11 @@ jobs:
       - run: npm ci
 
       # Exécute les tests unitaires et d'intégration (Jest + Supertest)
+      # --runInBand : les deux suites partagent la même vraie base MySQL et font
+      # chacune un sync({force:true}) sur la table Tasks -> en parallèle (comportement
+      # par défaut de Jest), elles se marchent dessus. On les force en série.
       - name: Exécuter les tests backend
-        run: npm test
+        run: npm test -- --runInBand
 
   frontend-test:
     runs-on: ubuntu-latest
