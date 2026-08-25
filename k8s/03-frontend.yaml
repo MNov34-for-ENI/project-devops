@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: todolist
 spec:
   replicas: 2
   selector:
@@ -14,7 +15,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: <REGISTRY>/frontend:latest
+          image: ghcr.io/revanito/project-devops-frontend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
 ---
@@ -22,6 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend
+  namespace: todolist
 spec:
   ports:
     - port: 80
