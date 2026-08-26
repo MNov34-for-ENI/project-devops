@@ -37,6 +37,8 @@ spec:
                 secretKeyRef:
                   name: mysql-credentials
                   key: MYSQL_DATABASE
+            - name: DB_DIALECT
+              value: "mysql"
 ---
 apiVersion: v1
 kind: Service
