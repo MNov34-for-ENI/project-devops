@@ -32,7 +32,7 @@ backend/
 └── README.md             # Documentation du backend
 ```
 
-## ⚙️ Configuration de l'environnement
+## ⚙️ Configuration de l'environnement.
 
 ### Prérequis
 
