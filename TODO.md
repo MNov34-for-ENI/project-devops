@@ -40,26 +40,33 @@ Foundation step, not graded directly, but everything after depends on trusting t
 - [X] Run backend + frontend unit tests
 - [X] Build + push Docker images (only reachable if tests pass — gate this explicitly, not just
       via job order)
-- [ ] Deploy to AKS only if tests are 100% green
-- [ ] Deploy step should update the k8s manifests' image tag so a re-run produces a rolling
-      update (feeds into axis 5)
+- [X] Deploy to AKS only if tests are 100% green — matrix job (Corentin/Nicolas/Mael), each own
+      GitHub Environment + own cluster, OIDC via per-person Managed Identity (no stored secrets)
+- [X] Deploy step updates the k8s manifests' image tag (sed → commit SHA) before `kubectl apply`
+- [ ] Corentin's deploy confirmed green end-to-end (tests → images → k8s → monitoring). Nicolas's
+      and Mael's `deploy` jobs still failing on the Azure OIDC login step (AADSTS700211/700213 —
+      federated identity credential not syncing to the AAD backend despite matching config;
+      delete+recreate attempted, still investigating). Both deployed manually via `kubectl apply`
+      in the meantime so their apps are live regardless of the CI issue.
 
 ## 6. Kubernetes manifests (`k8s/`) (4 pts)
-- [ ] `frontend-deployment.yaml`, `backend-deployment.yaml`, `mysql-deployment.yaml` + matching
-      Services
-- [ ] Secrets/ConfigMaps for DB credentials and backend env vars (don't hardcode `.env` values
-      into images)
-- [ ] Ingress (NGINX or the newer AKS-managed API Gateway — pick one, document why)
-- [ ] MySQL persistence via PVC (optional per consignes, but cheap points if time allows)
-- [ ] Verify a rolling update actually works (bump image tag, `kubectl rollout status`) —
-      axis 5, /1.5 pts, easy to skip by accident
+- [X] `00-namespace.yaml`, `01-database.yaml` (mysql Secret+PVC+Deployment+Service),
+      `02-backend.yaml`, `03-frontend.yaml`, `04-ingress.yaml`
+- [X] Secrets/ConfigMaps for DB credentials (`mysql-credentials`) — backend env vars sourced from
+      it directly, no hardcoded `.env` values in images
+- [X] Ingress (nginx, `ingress-nginx` via Helm) — path-based routing `/api` → backend, `/` → frontend
+- [X] MySQL persistence via PVC (5Gi, AKS default StorageClass / Azure Disk)
+- [X] Verified working end-to-end on Corentin's cluster: pods healthy, write path confirmed through
+      the public Ingress IP (including proper UTF-8/accented data)
 
 ## 7. Monitoring (`monitoring/`)
 Implicitly required, feeds documentation score.
 
-- [ ] Deploy Prometheus + Grafana (helm chart is fastest) into the cluster
-- [ ] At least one working dashboard; screenshot/export it into `monitoring/`
-- [ ] Bonus: custom metrics export from the backend
+- [X] Prometheus + Grafana (`kube-prometheus-stack` via Helm) — now installed automatically by the
+      CI `deploy` job, not just manually
+- [ ] At least one working dashboard; screenshot/export it into `monitoring/` (dir doesn't exist yet)
+- [ ] Custom metrics: `/metrics` endpoint (`prom-client`) coded + tested in backend, but no
+      `ServiceMonitor` wired up yet to actually scrape it, and no dashboard built around it
 
 ## 8. Documentation (5 pts, separate from technical /15)
 - [ ] Root `README.md`: architecture, tech choices, CI/CD flow, AKS config, Terraform infra,
