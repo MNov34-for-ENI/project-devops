@@ -117,8 +117,8 @@ jobs:
       - name: Construire le bundle de production
         run: npx ng build --configuration production
 
-  # NOTE : owner GHCR en dur (revanito) — si vous forkez sous votre propre compte,
-  # remplacez "revanito" par votre login GitHub en minuscules dans les deux jobs ci-dessous.
+  # NOTE : owner GHCR en dur (MNov34-for-ENI) — si vous forkez sous votre propre compte,
+  # remplacez "MNov34-for-ENI" par votre login GitHub en minuscules dans les deux jobs ci-dessous.
   backend-image:
     needs: backend-test
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -139,8 +139,8 @@ jobs:
           context: backend
           push: true
           tags: |
-            ghcr.io/revanito/project-devops-backend:latest
-            ghcr.io/revanito/project-devops-backend:${{ github.sha }}
+            ghcr.io/MNov34-for-ENI/project-devops-backend:latest
+            ghcr.io/MNov34-for-ENI/project-devops-backend:${{ github.sha }}
 
   frontend-image:
     needs: frontend-build
@@ -162,8 +162,8 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ghcr.io/revanito/project-devops-frontend:latest
-            ghcr.io/revanito/project-devops-frontend:${{ github.sha }}
+            ghcr.io/MNov34-for-ENI/project-devops-frontend:latest
+            ghcr.io/MNov34-for-ENI/project-devops-frontend:${{ github.sha }}
 
   deploy:
     needs: [backend-image, frontend-image]
@@ -197,8 +197,8 @@ jobs:
 
       - name: Inject Commit SHA into Manifests
         run: |
-          sed -i "s|ghcr.io/revanito/project-devops-backend:latest|ghcr.io/revanito/project-devops-backend:${{ github.sha }}|g" k8s/02-backend.yaml
-          sed -i "s|ghcr.io/revanito/project-devops-frontend:latest|ghcr.io/revanito/project-devops-frontend:${{ github.sha }}|g" k8s/03-frontend.yaml
+          sed -i "s|ghcr.io/MNov34-for-ENI/project-devops-backend:latest|ghcr.io/MNov34-for-ENI/project-devops-backend:${{ github.sha }}|g" k8s/02-backend.yaml
+          sed -i "s|ghcr.io/MNov34-for-ENI/project-devops-frontend:latest|ghcr.io/MNov34-for-ENI/project-devops-frontend:${{ github.sha }}|g" k8s/03-frontend.yaml
 
       - name: Deploy to AKS
         run: kubectl apply -f k8s/

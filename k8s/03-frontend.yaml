@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/revanito/project-devops-frontend:latest
+          image: ghcr.io/MNov34-for-ENI/project-devops-frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
