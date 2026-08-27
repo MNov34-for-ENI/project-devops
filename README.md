@@ -1,5 +1,6 @@
-# project-devops
-Groupe Maël, Corentin B. et Nicolas
+# Project-DevOps
+Groupe Maël NOUVEL, Corentin Bédel et Nicolas Bonnifet
+Documentation : Assistée par Claude Sonnet 5 - Effort medium (et pas gpt-4o-mini, on a les moyens ici!)
 
 ## 1) Architecture de l'application
 
