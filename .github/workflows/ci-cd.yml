@@ -213,4 +213,6 @@ jobs:
             --set grafana.adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }} \
             --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
             --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+            --set-json prometheus.prometheusSpec.podMonitorNamespaceSelector='{}' \
+            --set-json prometheus.prometheusSpec.serviceMonitorNamespaceSelector='{}' \
             --wait

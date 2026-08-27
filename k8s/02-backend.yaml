@@ -18,7 +18,8 @@ spec:
           image: ghcr.io/revanito/project-devops-backend:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 3000
+            - name: http
+              containerPort: 3000
           env:
             - name: DB_HOST
               value: "mysql"
@@ -45,8 +46,11 @@ kind: Service
 metadata:
   name: backend
   namespace: todolist
+  labels:
+    app: backend
 spec:
   ports:
-    - port: 3000
+    - name: http
+      port: 3000
   selector:
     app: backend
