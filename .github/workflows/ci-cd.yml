@@ -175,7 +175,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: 
-        member: [Corentin, Nicolas, Mael]
+        member: [Mael]
     environment: ${{ matrix.member }}
     defaults:
       run:
