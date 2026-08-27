@@ -139,8 +139,8 @@ jobs:
           context: backend
           push: true
           tags: |
-            ghcr.io/MNov34-for-ENI/project-devops-backend:latest
-            ghcr.io/MNov34-for-ENI/project-devops-backend:${{ github.sha }}
+            ghcr.io/mnov34-for-eni/project-devops-backend:latest
+            ghcr.io/mnov34-for-eni/project-devops-backend:${{ github.sha }}
 
   frontend-image:
     needs: frontend-build
@@ -162,8 +162,8 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ghcr.io/MNov34-for-ENI/project-devops-frontend:latest
-            ghcr.io/MNov34-for-ENI/project-devops-frontend:${{ github.sha }}
+            ghcr.io/mnov34-for-eni/project-devops-frontend:latest
+            ghcr.io/mnov34-for-eni/project-devops-frontend:${{ github.sha }}
 
   deploy:
     needs: [backend-image, frontend-image]
@@ -197,8 +197,8 @@ jobs:
 
       - name: Inject Commit SHA into Manifests
         run: |
-          sed -i "s|ghcr.io/MNov34-for-ENI/project-devops-backend:latest|ghcr.io/MNov34-for-ENI/project-devops-backend:${{ github.sha }}|g" k8s/02-backend.yaml
-          sed -i "s|ghcr.io/MNov34-for-ENI/project-devops-frontend:latest|ghcr.io/MNov34-for-ENI/project-devops-frontend:${{ github.sha }}|g" k8s/03-frontend.yaml
+          sed -i "s|ghcr.io/mnov34-for-eni/project-devops-backend:latest|ghcr.io/mnov34-for-eni/project-devops-backend:${{ github.sha }}|g" k8s/02-backend.yaml
+          sed -i "s|ghcr.io/mnov34-for-eni/project-devops-frontend:latest|ghcr.io/mnov34-for-eni/project-devops-frontend:${{ github.sha }}|g" k8s/03-frontend.yaml
 
       - name: Deploy to AKS
         run: kubectl apply -f k8s/
