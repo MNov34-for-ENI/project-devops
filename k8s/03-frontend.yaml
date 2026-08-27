@@ -15,10 +15,17 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/MNov34-for-ENI/project-devops-frontend:latest
+          image: ghcr.io/mnov34-for-eni/project-devops-frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "64Mi"
+            limits:
+              cpu: "50m"
+              memory: "128Mi"
 ---
 apiVersion: v1
 kind: Service
