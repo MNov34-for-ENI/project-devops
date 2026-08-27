@@ -3,6 +3,8 @@ data "azurerm_resource_group" "this" {
   name = var.resource_group_name
 }
 
+data "azurerm_client_config" "current" {}
+
 resource "azurerm_kubernetes_cluster" "this" {
   name                = var.cluster_name
   location            = data.azurerm_resource_group.this.location
@@ -45,3 +47,37 @@ resource "azurerm_kubernetes_cluster" "this" {
     ignore_changes = [tags]
   }
 }
+
+# Identité utilisée par le job "deploy" du pipeline GitHub Actions pour s'authentifier
+# Azure via OIDC = pas de secret
+# on passe par une Managed Identity
+resource "azurerm_user_assigned_identity" "ci" {
+  name                = "project-devops-ci-identity"
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
+  tags                = merge(data.azurerm_resource_group.this.tags, { user = var.myuid })
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
+}
+
+# Droit nécessaire pour que le pipeline puisse récupérer les credentials AKS
+# (az aks get-credentials) et déployer (kubectl apply).
+resource "azurerm_role_assignment" "ci_contributor" {
+  scope                = data.azurerm_resource_group.this.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.ci.principal_id
+}
+
+# Lien de confiance OIDC entre GitHub Actions et cette identité.
+# resource_group_name > deprecated dans terraform avec l'assigned identity, changement // aussi "parent_id" deprecated, putain
+resource "azurerm_federated_identity_credential" "ci_github" {
+  name                       = "github-actions-${lower(var.github_environment_name)}-env"
+  user_assigned_identity_id  = azurerm_user_assigned_identity.ci.id
+  audience                   = ["api://AzureADTokenExchange"]
+  issuer                     = "https://token.actions.githubusercontent.com/"
+  subject   = "repo:Revanito@100203166/project-devops@1344687975:environment:${var.github_environment_name}"
+}
+# Source https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/managed_service_identity
+# Source https://learn.microsoft.com/en-us/azure/developer/terraform/authenticate-to-azure-with-managed-identity-for-azure-services
