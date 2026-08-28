@@ -153,8 +153,7 @@ des étapes et des impasses, dans l'ordre :
    30+ minutes sans aucune modification, et même la création d'une **toute nouvelle** Managed
    Identity de zéro (nouveau nom, nouveau Client ID, nouveau rôle, nouveau federated credential —
    donc aucune ressource partagée avec les tentatives précédentes), l'authentification OIDC
-   échoue encore pour un des trois comptes, avec le message `AADSTS700211`/`700213` en alternance,
-   sans qu'aucune configuration incorrecte n'ait pu être identifiée. Le problème était seulement qu'il y avais un slash en trop sur l'issuer.
+   échoue encore pour un des trois comptes, avec le message `AADSTS700211`/`700213` en alternance. Le problème enfin identifié, la configuration incorrecte était un slash en trop sur l'issuer.
 
 ### 7.2) Autres difficultés notables
 
