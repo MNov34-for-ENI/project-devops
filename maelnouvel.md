@@ -119,14 +119,6 @@ permission désactivée.
 
 ## 7) Difficultés rencontrées
 
-- Repérer et lever le conflit entre deux stratégies possibles d'injection de l'URL API (substitution runtime vs. génération au build CI) avant qu'il ne cause une régression silencieuse.
-
-- Docker ne démarrait pas nativement dans la LXC Proxmox (erreur `sysctl net.ipv4.ip_unprivileged_port_start: permission denied`) : nécessité d'activer `nesting`/`keyctl` et d'ajouter `lxc.apparmor.profile: unconfined` côté hôte Proxmox.
-
-- Une synchronisation de fichiers via `tar` vers la LXC a temporairement recréé un working tree Git divergent, sur un clone séparé du dépôt présent sur la LXC — résolu par un `git checkout --` ciblé plutôt qu'un reset destructif.
-
-- Erreur de taille de nœuds lors du déploiement de l'infra avec Terraform (`Standard_B2s` jugé trop juste par le formateur, besoin de `Standard_B2ms`) : Azure ne permet pas de redimensionner un node pool existant en place. Testé `temporary_name_for_rotation` (rotation via un pool temporaire) mais le compte étudiant n'a pas le rôle `agentPools/delete` nécessaire — résolu par un `terraform destroy` / `plan` / `apply` complet à la place.
-
 ### 7.1) L'authentification OIDC GitHub Actions ↔ Azure
 
 De loin la difficulté la plus longue du projet (plusieurs heures étalées sur deux jours). Résumé
@@ -162,12 +154,7 @@ des étapes et des impasses, dans l'ordre :
    Identity de zéro (nouveau nom, nouveau Client ID, nouveau rôle, nouveau federated credential —
    donc aucune ressource partagée avec les tentatives précédentes), l'authentification OIDC
    échoue encore pour un des trois comptes, avec le message `AADSTS700211`/`700213` en alternance,
-   sans qu'aucune configuration incorrecte n'ait pu être identifiée. Hypothèse la plus probable :
-   un état incohérent côté backend Azure AD, propre à ce compte/resource group, probablement lié
-   au volume inhabituel de créations/suppressions effectuées dessus pendant le débogage.
-   Contournement retenu : déploiement manuel (`az aks get-credentials` + `kubectl apply -f k8s/`
-   depuis un terminal déjà authentifié), qui fonctionne parfaitement et ne dépend pas de cette
-   authentification OIDC.
+   sans qu'aucune configuration incorrecte n'ait pu être identifiée. Le problème était seulement qu'il y avais un slash en trop sur l'issuer.
 
 ### 7.2) Autres difficultés notables
 
@@ -183,10 +170,6 @@ des étapes et des impasses, dans l'ordre :
   sont pas automatiquement accessibles en écriture aux autres collaborateurs du dépôt via
   `GITHUB_TOKEN`. Il faut explicitement lier chaque package au dépôt (Package Settings > Manage
   Actions access > Add Repository, rôle Write).
-- **`.git` imbriqué accidentel** : un `git init` lancé par erreur depuis `iac/` a créé un second
-  dépôt Git vide directement dans ce dossier, masquant le vrai dépôt dès que le terminal s'y
-  trouvait (`git status` affichait "No commits yet"). Résolu en supprimant simplement ce `.git`
-  imbriqué (aucun commit n'y avait été fait, donc aucune perte).
 
 ## 8) Déploiement manuel (contournement)
 
@@ -245,7 +228,20 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 ```
 
 **6. Vérification de bout en bout**
+
+Get the ip's to check if they answer (and the IP to access them)
+```
+kubectl get svc -n ingress-nginx ingress-nginx-controller -o wide && echo "---" && kubectl get svc -n monitoring -o wide
+```
+
+
 ```
 curl http://<EXTERNAL-IP>/           # doit répondre 200 (frontend)
 curl http://<EXTERNAL-IP>/api/tasks  # doit répondre [] ou la liste des tâches (backend + DB)
+```
+
+Grafana access : 
+```
+kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80
+http://localhost:3000
 ```

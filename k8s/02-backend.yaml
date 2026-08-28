@@ -47,6 +47,18 @@ spec:
                   key: MYSQL_DATABASE
             - name: DB_DIALECT
               value: "mysql"
+          livenessProbe:
+            httpGet:
+              path: /api/tasks
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /api/tasks
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
